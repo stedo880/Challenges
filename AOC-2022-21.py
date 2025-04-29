@@ -1,7 +1,11 @@
+# Advent of Code 2022 - Day 21
+# https://adventofcode.com/2022/day/21
+
 import re
 import sys
 
 
+# Function to parse the input text and create a dictionary of monkeys
 def parse_input(input_text):
     monkeys = {}
     for line in input_text.strip().split("\n"):
@@ -15,6 +19,30 @@ def parse_input(input_text):
     return monkeys
 
 
+# Recursively evaluate the monkey's job
+def evaluate_monkey(monkeys, name):
+    if isinstance(monkeys[name], int):
+        return monkeys[name]
+
+    # Split the job into parts
+    parts = monkeys[name].split()
+    left = evaluate_monkey(monkeys, parts[0])
+    operator = parts[1]
+    right = evaluate_monkey(monkeys, parts[2])
+
+    # Perform the operation based on the operator
+    if operator == "+":
+        return left + right
+    elif operator == "-":
+        return left - right
+    elif operator == "*":
+        return left * right
+    elif operator == "/":
+        return left // right  # Use integer division for consistency with the problem statement
+    else:
+        raise ValueError(f"Unknown operator: {operator}")
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python AOC-2022-21.py <input_file>")
@@ -26,6 +54,11 @@ if __name__ == "__main__":
             input_text = file.read()
         monkeys = parse_input(input_text)
         print(monkeys)
+
+        # Evaluate the root monkey's job
+        root_value = evaluate_monkey(monkeys, "root")
+        print(f"Root monkey value: {root_value}")
+
     except FileNotFoundError:
         print(f"Error: File '{input_file}' not found.")
         sys.exit(1)
