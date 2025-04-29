@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
         # Evaluate the root monkey's job
         root_value = evaluate_monkey(monkeys, "root")
-        print(f"Root monkey value: {root_value}")
+        print(f"Root monkey yells: {root_value}!")
 
     except FileNotFoundError:
         print(f"Error: File '{input_file}' not found.")
