@@ -1,4 +1,19 @@
+import re
 import sys
+
+
+def parse_input(input_text):
+    monkeys = {}
+    for line in input_text.strip().split("\n"):
+        name, job = line.split(": ")
+        if re.match(r"^\d+$", job):
+            # If the job is a number, store it as an integer
+            monkeys[name] = int(job)
+        else:
+            # Otherwise, store the operation as a string
+            monkeys[name] = job
+    return monkeys
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -14,15 +29,3 @@ if __name__ == "__main__":
     except FileNotFoundError:
         print(f"Error: File '{input_file}' not found.")
         sys.exit(1)
-
-    def parse_input(input_text):
-        monkeys = {}
-        for line in input_text.strip().split("\n"):
-            name, job = line.split(": ")
-            if re.match(r"^\d+$", job):
-                # If the job is a number, store it as an integer
-                monkeys[name] = int(job)
-            else:
-                # Otherwise, store the operation as a string
-                monkeys[name] = job
-        return monkeys
