@@ -7,7 +7,7 @@ import sys
 # Define a class hierarchy for symbolic expressions
 
 class Expr:
-    """Base class: either a constant, a variable, or a binary operation."""
+    # Base class: either a constant, a variable, or a binary operation.
     pass
 
 class Constant(Expr):
@@ -45,68 +45,53 @@ def contains_humn(expr: Expr) -> bool:
     # Operation
     return contains_humn(expr.left) or contains_humn(expr.right)
 
-def solve(expr: Expr, target) -> int:
-    # Base case: we've isolated the variable
+def eval_constant(expr: Expr) -> int:
+    if isinstance(expr, Constant):
+        return expr.value
     if isinstance(expr, Variable):
-        return target
+        raise ValueError("Cannot eval_constant on a Variable")
+    return compute(eval_constant(expr.left),
+                   expr.op,
+                   eval_constant(expr.right))
 
-    # If the target is a constant, convert it to an integer
-    if isinstance(target, Constant):
-        target = target.value
+def solve_equation(left: Expr, right: Expr) -> int:
+    # base cases
+    if isinstance(left, Variable):
+        return eval_constant(right)
+    if isinstance(right, Variable):
+        return eval_constant(left)
 
-    # Must be an operation
-    assert isinstance(expr, Operation)
-    L, op, R = expr.left, expr.op, expr.right
-
-    # Case A: humn is in the left subtree
-    if contains_humn(L):
-        # R must be a constant
-        assert isinstance(R, Constant)
-        c = R.value
-
-        if op == "+":
-            # L + c = target  ⇒  L = target - c
-            new_target = target - c
-        elif op == "-":
-            # L - c = target  ⇒  L = target + c
-            new_target = target + c
-        elif op == "*":
-            # L * c = target  ⇒  L = target // c
-            new_target = target // c
-        elif op == "/":
-            # L / c = target  ⇒  L = target * c
-            new_target = target * c
-        else:
-            raise ValueError(f"Unknown op {op}")
-
-        return solve(L, new_target)
-
-    # Case B: humn is in the right subtree
+    # pick symbolic side
+    if contains_humn(left):
+        sym, other = left, right
     else:
-        # L must be a constant
-        assert isinstance(L, Constant)
-        c = L.value
+        sym, other = right, left
 
-        if op == "+":
-            # c + R = target  ⇒  R = target - c
-            new_target = target - c
-        elif op == "-":
-            # c - R = target  ⇒  R = c - target
-            new_target = c - target
-        elif op == "*":
-            # c * R = target  ⇒  R = target // c
-            new_target = target // c
-        elif op == "/":
-            # c / R = target  ⇒  R = c // target
-            new_target = c // target
-        else:
-            raise ValueError(f"Unknown op {op}")
+    const_val = eval_constant(other)
+    L, op, R = sym.left, sym.op, sym.right
 
-        return solve(R, new_target)
+    if contains_humn(L):
+        # (L op R) = const => L = inv(const, R)
+        r = eval_constant(R)
+        if op == "+": new_target = const_val - r
+        elif op == "-": new_target = const_val + r
+        elif op == "*": new_target = const_val // r
+        elif op == "/": new_target = const_val * r
+        next_sym = L
+    else:
+        # (L op R) = const => R = inv_left(const, L)
+        l = eval_constant(L)
+        if op == "+": new_target = const_val - l
+        elif op == "-": new_target = l - const_val
+        elif op == "*": new_target = const_val // l
+        elif op == "/": new_target = l // const_val
+        next_sym = R
+
+    return solve_equation(next_sym, Constant(new_target))
 
 
 # Function to parse the input text and create a dictionary of monkeys
-def parse_input(input_text):
+def parse_input(input_text: str) -> dict[str, int|str]:
     monkeys = {}
     for line in input_text.strip().split("\n"):
         name, job = line.split(": ")
@@ -120,7 +105,7 @@ def parse_input(input_text):
 
 
 # Recursively evaluate the monkey's job
-def evaluate_monkey(monkeys, name):
+def evaluate_monkey(monkeys: dict[str, int|str], name: str) -> Expr:
     job = monkeys[name]
     
     # if the monkey's name is "humn", return variable "humn"
@@ -165,7 +150,7 @@ if __name__ == "__main__":
         print(f"Left expression: {left_expr}")
         print(f"Right expression: {right_expr}")    
 
-        answer = solve(left_expr, right_expr)
+        answer = solve_equation(left_expr, right_expr)
         
         print("humn =", answer)
         
