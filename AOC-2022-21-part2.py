@@ -45,10 +45,14 @@ def contains_humn(expr: Expr) -> bool:
     # Operation
     return contains_humn(expr.left) or contains_humn(expr.right)
 
-def solve(expr: Expr, target: int) -> int:
+def solve(expr: Expr, target) -> int:
     # Base case: we've isolated the variable
     if isinstance(expr, Variable):
         return target
+
+    # If the target is a constant, convert it to an integer
+    if isinstance(target, Constant):
+        target = target.value
 
     # Must be an operation
     assert isinstance(expr, Operation)
@@ -161,13 +165,7 @@ if __name__ == "__main__":
         print(f"Left expression: {left_expr}")
         print(f"Right expression: {right_expr}")    
 
-        # Solve based on left and right expressions
-        if isinstance(left_expr, Constant):
-            # left_expr is a constant, so we need to solve for humn in the right expression
-            answer = solve(left_expr.value, right_expr)
-        else:
-            # right_expr is a constant, so we need to solve for humn in the left expression
-            answer = solve(left_expr, right_expr.value)
+        answer = solve(left_expr, right_expr)
         
         print("humn =", answer)
         
