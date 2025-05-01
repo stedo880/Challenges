@@ -25,6 +25,10 @@ def evaluate_monkey(monkeys, name):
     if isinstance(monkeys[name], int):
         return monkeys[name]
 
+    # if the monkey's name is "humn", return symbolic "humn"
+    if name == "humn":
+        return "humn"
+
     # Split the job into parts
     parts = monkeys[name].split()
     left = evaluate_monkey(monkeys, parts[0])
